@@ -1,10 +1,17 @@
-export default class MathsController {
-    constructor(httpContext) {
-        this.httpContext = httpContext;
+import Controller from './Controller.js';
+
+export default class MathsController extends Controller {
+    constructor(HttpContext, repository = null) {
+        super(HttpContext, repository);
     }
 
-    get(id) {
-        const { op, x, y, n } = this.httpContext.req.query;
+    get() { 
+        const { op, x, y, n } = this.HttpContext.req.query;
+
+        if (!op || isNaN(x) || isNaN(y)) {
+            this.HttpContext.response.badRequest('Invalid operation or operands');
+            return;
+        }
 
         let result;
         switch (op) {
@@ -14,16 +21,13 @@ export default class MathsController {
             case '-':
                 result = parseFloat(x) - parseFloat(y);
                 break;
-            // ... Handle other operations
+            // ... other cases
             default:
-                this.httpContext.response.json({
-                    status: 'error',
-                    message: 'Unsupported operation'
-                });
+                this.HttpContext.response.badRequest('Unsupported operation');
                 return;
         }
 
-        this.httpContext.response.json({
+        this.HttpContext.response.JSON({
             operation: op,
             operands: { x, y },
             result,
