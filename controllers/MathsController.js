@@ -1,4 +1,6 @@
 import Controller from './Controller.js';
+import fs from 'fs';
+
 
 function isPrime(num) {
     if (num <= 1) return false;
@@ -166,6 +168,11 @@ export default class MathsController extends Controller {
 
         this.HttpContext.response.JSON(responsePayload);
     }
+
+    // help(){
+    //     let helpPagePath = path.join(process.cwd(), wwwroot, 'my path?')
+    //     this.HttpContext.response.HTML(fs.readFileSync(helpPagePath)); // import fs?
+    // }
 
     getDocumentationHTML() {
         return `
