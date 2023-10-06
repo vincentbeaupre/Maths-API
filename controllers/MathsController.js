@@ -49,36 +49,7 @@ export default class MathsController extends Controller {
         }
 
         const { op, x, y, n } = this.HttpContext.payload;
-
-        let responsePayload = { op: op === ' ' ? '+' : op };
-
-        const allowedParams = {
-            '+': ['op', 'x', 'y'],
-            '-': ['op', 'x', 'y'],
-            '*': ['op', 'x', 'y'],
-            '/': ['op', 'x', 'y'],
-            '%': ['op', 'x', 'y'],
-            '!': ['op', 'n'],
-            'p': ['op', 'n'],
-            'np': ['op', 'n']
-        };
-
-        if (op && allowedParams[op]) {
-            const extraParams = Object.keys(this.HttpContext.payload).filter(param => !allowedParams[op].includes(param));
-            if (extraParams.length > 0) {
-                this.HttpContext.response.JSON({
-                    error: 'Extra parameters are not allowed',
-                    extraParams: extraParams.map(param => ({ [param]: this.HttpContext.payload[param] }))
-                });
-                return;
-            }
-        } else if (!op) {
-            this.HttpContext.response.JSON({
-                error: 'Operation (op) parameter is required',
-                ...this.HttpContext.payload
-            });
-            return;
-        }
+        let responsePayload = { ...this.HttpContext.payload };
 
         switch (op) {
             case ' ':
@@ -86,6 +57,11 @@ export default class MathsController extends Controller {
             case '*':
             case '/':
             case '%':
+                if (Object.keys(this.HttpContext.payload).length > 3) {
+                    responsePayload.error = 'Extra parameters are not allowed';
+                    this.HttpContext.response.JSON(responsePayload);
+                    return;
+                }
                 if (x === undefined || y === undefined) {
                     this.HttpContext.response.JSON({
                         op: op,
@@ -99,15 +75,20 @@ export default class MathsController extends Controller {
             case '!':
             case 'p':
             case 'np':
+                if (Object.keys(this.HttpContext.payload).length > 2) {
+                    responsePayload.error = 'Extra parameters are not allowed';
+                    this.HttpContext.response.JSON(responsePayload);
+                    return;
+                }
                 if (n === undefined) {
                     responsePayload.error = "The 'n' parameter is required for this operation";
-                    this.HttpContext.response.badRequest(responsePayload);
+                    this.HttpContext.response.JSON(responsePayload);
                     return;
                 }
                 break;
             default:
                 responsePayload.error = "Unsupported operation";
-                this.HttpContext.response.badRequest(responsePayload);
+                this.HttpContext.response.JSON(responsePayload);
                 return;
         }
 
