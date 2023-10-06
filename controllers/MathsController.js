@@ -52,6 +52,25 @@ export default class MathsController extends Controller {
 
         let responsePayload = { op: op === ' ' ? '+' : op };
 
+        const allowedParams = {
+            '+': ['op', 'x', 'y'],
+            '-': ['op', 'x', 'y'],
+            '*': ['op', 'x', 'y'],
+            '/': ['op', 'x', 'y'],
+            '%': ['op', 'x', 'y'],
+            '!': ['op', 'n'],
+            'p': ['op', 'n'],
+            'np': ['op', 'n']
+        };
+
+        if (op && allowedParams[op] && Object.keys(this.HttpContext.payload).some(param => !allowedParams[op].includes(param))) {
+            this.HttpContext.response.JSON({
+                error: 'Extra parameters are not allowed',
+                ...this.HttpContext.payload
+            });
+            return;
+        }
+
         switch (op) {
             case ' ':
             case '-':
@@ -141,8 +160,8 @@ export default class MathsController extends Controller {
             case 'p':
             case 'np':
                 if (n === undefined || !Number.isInteger(parseFloat(n)) || parseFloat(n) < 0) {
-                    responsePayload.error = "'n' parameter must be a non-negative integer";
                     responsePayload.n = n;
+                    responsePayload.error = "'n' parameter must be a non-negative integer";
                     this.HttpContext.response.JSON(responsePayload);
                     return;
                 }
