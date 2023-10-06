@@ -47,11 +47,11 @@ export default class MathsController extends Controller {
             this.help();
             return;
         }
-
+        
+        let responsePayload = { ...this.HttpContext.payload };
         let { op } = this.HttpContext.payload;
         op = op === " " ? "+" : op;
         const { x, y, n } = this.HttpContext.payload;
-        let responsePayload = { ...this.HttpContext.payload };
 
         switch (op) {
             case '+':
