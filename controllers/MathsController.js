@@ -48,11 +48,13 @@ export default class MathsController extends Controller {
             return;
         }
 
-        const { op, x, y, n } = this.HttpContext.payload;
+        let { op } = this.HttpContext.payload;
+        op = op === " " ? "+" : op;
+        const { x, y, n } = this.HttpContext.payload;
         let responsePayload = { ...this.HttpContext.payload };
 
         switch (op) {
-            case ' ':
+            case '+':
             case '-':
             case '*':
             case '/':
@@ -93,7 +95,7 @@ export default class MathsController extends Controller {
         }
 
         switch (op) {
-            case ' ':
+            case '+':
             case '-':
             case '*':
             case '/':
@@ -116,7 +118,7 @@ export default class MathsController extends Controller {
                 responsePayload.y = parseFloat(y);
 
                 switch (op) {
-                    case ' ':
+                    case '+':
                         responsePayload.value = responsePayload.x + responsePayload.y;
                         break;
                     case '-':
