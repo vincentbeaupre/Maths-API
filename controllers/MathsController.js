@@ -63,9 +63,18 @@ export default class MathsController extends Controller {
             'np': ['op', 'n']
         };
 
-        if (op && allowedParams[op] && Object.keys(this.HttpContext.payload).some(param => !allowedParams[op].includes(param))) {
+        if (op && allowedParams[op]) {
+            const extraParams = Object.keys(this.HttpContext.payload).filter(param => !allowedParams[op].includes(param));
+            if (extraParams.length > 0) {
+                this.HttpContext.response.JSON({
+                    error: 'Extra parameters are not allowed',
+                    extraParams: extraParams.map(param => ({ [param]: this.HttpContext.payload[param] }))
+                });
+                return;
+            }
+        } else if (!op) {
             this.HttpContext.response.JSON({
-                error: 'Extra parameters are not allowed',
+                error: 'Operation (op) parameter is required',
                 ...this.HttpContext.payload
             });
             return;
