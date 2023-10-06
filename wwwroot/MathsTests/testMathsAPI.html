@@ -87,7 +87,7 @@
                 await webAPI_getMaths(host, "?op=p&n=2", showResult)
                 await webAPI_getMaths(host, "?op=p&n=5", showResult)
                 await webAPI_getMaths(host, "?op=p&n=6", showResult)
-                await webAPI_getMaths(host, "?op=p&n=6.5", showResult)
+                await webAPI_getMaths(host, "?op=p&n=6.5", showResult) //here
                 await webAPI_getMaths(host, "?op=p&n=113", showResult)
                 await webAPI_getMaths(host, "?op=p&n=114", showResult)
                 await webAPI_getMaths(host, "?op=np&n=1", showResult)
@@ -148,7 +148,7 @@
                     default:
                         return (result.error != null);
                 }
-                if (result.value == null)
+                if (result.value == null) //Condition normale qui justifie ERROR lorsque le payload ne contient pas de value
                     return false;
 
                 switch (result.op) {

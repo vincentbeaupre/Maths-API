@@ -138,43 +138,33 @@ export default class MathsController extends Controller {
                 break;
 
             case '!':
-                if (isNaN(n) || n < 0) {
-                    responsePayload.error = "'n' parameter must be a non-negative integer";
-                    responsePayload.n = n;
-                    this.HttpContext.response.badRequest(responsePayload);
-                    return;
-                }
-
-                responsePayload.n = parseInt(n);
-                responsePayload.value = factorial(responsePayload.n);
-                break;
-
             case 'p':
-                if (isNaN(n) || n < 0) {
+            case 'np':
+                if (n === undefined || !Number.isInteger(parseFloat(n)) || parseFloat(n) < 0) {
                     responsePayload.error = "'n' parameter must be a non-negative integer";
                     responsePayload.n = n;
-                    this.HttpContext.response.badRequest(responsePayload);
+                    this.HttpContext.response.JSON(responsePayload);
                     return;
                 }
 
                 responsePayload.n = parseInt(n);
-                responsePayload.value = isPrime(responsePayload.n);
-                break;
 
-            case 'np':
-                if (isNaN(n) || n <= 0) {
-                    responsePayload.error = "'n' parameter must be a positive integer";
-                    responsePayload.n = n;
-                    this.HttpContext.response.badRequest(responsePayload);
-                    return;
+                switch (op) {
+                    case '!':
+                        responsePayload.value = factorial(responsePayload.n);
+                        break;
+                    case 'p':
+                        responsePayload.value = isPrime(responsePayload.n);
+                        break;
+                    case 'np':
+                        responsePayload.value = findNthPrime(responsePayload.n);
+                        break;
                 }
-
-                responsePayload.n = parseInt(n);
-                responsePayload.value = findNthPrime(responsePayload.n);
                 break;
 
             default:
-                this.HttpContext.response.badRequest('Unsupported operation');
+                responsePayload.error = 'Unsupported operation';
+                this.HttpContext.response.JSON(responsePayload);
                 return;
         }
 
