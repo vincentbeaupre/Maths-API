@@ -50,7 +50,8 @@ export default class MathsController extends Controller {
         
         let responsePayload = { ...this.HttpContext.payload };
         responsePayload.op = responsePayload.op === " " ? "+" : responsePayload.op;
-
+        const { op, x, y, n } = responsePayload;
+        
         switch (op) {
             case '+':
             case '-':
