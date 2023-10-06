@@ -1,5 +1,4 @@
 const apiBaseURL = "/api/maths";
-//const apiBaseURL = "https://kbg-serverapi.glitch.me/api/maths";
 
 function webAPI_getMaths(host, queryString, successCallBack = null, errorCallBack = null) {
     return new Promise(resolve => {

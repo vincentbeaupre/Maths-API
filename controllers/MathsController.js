@@ -1,5 +1,7 @@
 import Controller from './Controller.js';
 import fs from 'fs';
+import path from 'path';
+const wwwroot = 'wwwroot';
 
 
 function isPrime(num) {
@@ -41,8 +43,8 @@ export default class MathsController extends Controller {
 
     calculate() {
 
-        if (!this.HttpContext.path.params) {
-            this.HttpContext.response.HTML(this.getDocumentationHTML());
+        if (Object.keys(this.HttpContext.path.params).length === 0) {
+            this.help();
             return;
         }
 
@@ -102,25 +104,34 @@ export default class MathsController extends Controller {
 
                 switch (op) {
                     case ' ':
-                        responsePayload.result = responsePayload.x + responsePayload.y;
+                        responsePayload.value = responsePayload.x + responsePayload.y;
                         break;
                     case '-':
-                        responsePayload.result = responsePayload.x - responsePayload.y;
+                        responsePayload.value = responsePayload.x - responsePayload.y;
                         break;
                     case '*':
-                        responsePayload.result = responsePayload.x * responsePayload.y;
+                        responsePayload.value = responsePayload.x * responsePayload.y;
                         break;
                     case '/':
                         if (responsePayload.y !== 0) {
-                            responsePayload.result = responsePayload.x / responsePayload.y;
+                            responsePayload.value = responsePayload.x / responsePayload.y;
                         } else {
-                            responsePayload.error = 'Division by zero is not allowed';
-                            this.HttpContext.response.badRequest(responsePayload);
+                            this.HttpContext.response.JSON({
+                                op: op,
+                                x: x,
+                                y: y,
+                                error: 'Division by zero is not allowed'
+                            });
                             return;
                         }
                         break;
                     case '%':
-                        responsePayload.result = responsePayload.x % responsePayload.y;
+                        if (responsePayload.y === 0) {
+                            responsePayload.error = 'Modulo by zero is not allowed';
+                            this.HttpContext.response.badRequest(responsePayload);
+                            return;
+                        }
+                        responsePayload.value = responsePayload.x % responsePayload.y;
                         break;
                 }
                 break;
@@ -134,7 +145,7 @@ export default class MathsController extends Controller {
                 }
 
                 responsePayload.n = parseInt(n);
-                responsePayload.result = factorial(responsePayload.n);
+                responsePayload.value = factorial(responsePayload.n);
                 break;
 
             case 'p':
@@ -146,7 +157,7 @@ export default class MathsController extends Controller {
                 }
 
                 responsePayload.n = parseInt(n);
-                responsePayload.isPrime = isPrime(responsePayload.n);
+                responsePayload.value = isPrime(responsePayload.n);
                 break;
 
             case 'np':
@@ -158,7 +169,7 @@ export default class MathsController extends Controller {
                 }
 
                 responsePayload.n = parseInt(n);
-                responsePayload.result = findNthPrime(responsePayload.n);
+                responsePayload.value = findNthPrime(responsePayload.n);
                 break;
 
             default:
@@ -169,94 +180,8 @@ export default class MathsController extends Controller {
         this.HttpContext.response.JSON(responsePayload);
     }
 
-    // help(){
-    //     let helpPagePath = path.join(process.cwd(), wwwroot, 'my path?')
-    //     this.HttpContext.response.HTML(fs.readFileSync(helpPagePath)); // import fs?
-    // }
-
-    getDocumentationHTML() {
-        return `
-        <html>
-        <head>
-            <title>Math API Documentation</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                }
-        
-                li {
-                    margin-bottom: 20px;
-                }
-        
-                code {
-                    background-color: #f0f0f0;
-                    padding: 5px;
-                    border-radius: 5px;
-                    display: inline-block;
-                    margin-bottom: 10px;
-                }
-            </style>
-        </head>
-        <body>
-            <h1>GET: Maths Endpoint</h1>
-            <p>List of possible query strings:</p>
-            <hr>
-            <ul>
-                <li>
-                    <strong>Addition:</strong> 
-                    <code>?op=+&x=[value]&y=[value]</code><br>
-                    Returns: <code>{"op":"+", "x":[value], "y":[value], "result":[x + y]}</code>
-                </li>
-        
-                <li>
-                    <strong>Subtraction:</strong> 
-                    <code>?op=-&x=[value]&y=[value]</code><br>
-                    Returns: <code>{"op":"-", "x":[value], "y":[value], "result":[x - y]}</code>
-                </li>
-        
-                <li>
-                    <strong>Multiplication:</strong> 
-                    <code>?op=*&x=[value]&y=[value]</code><br>
-                    Returns: <code>{"op":"*", "x":[value], "y":[value], "result":[x * y]}</code>
-                </li>
-        
-                <li>
-                    <strong>Division:</strong> 
-                    <code>?op=/&x=[value]&y=[value]</code><br>
-                    Returns: <code>{"op":"/", "x":[value], "y":[value], "result":[x / y]}</code><br>
-                    Note: <em>y</em> must not be 0 to avoid division by zero error.
-                </li>
-        
-                <li>
-                    <strong>Modulo:</strong> 
-                    <code>?op=%&x=[value]&y=[value]</code><br>
-                    Returns: <code>{"op":"%", "x":[value], "y":[value], "result":[x % y]}</code>
-                </li>
-        
-                <li>
-                    <strong>Factorial:</strong> 
-                    <code>?op=!&n=[value]</code><br>
-                    Returns: <code>{"op":"!", "n":[value], "result":[n!]}</code><br>
-                    Note: <em>n</em> must be a non-negative integer.
-                </li>
-        
-                <li>
-                    <strong>Prime Check:</strong> 
-                    <code>?op=p&n=[value]</code><br>
-                    Returns: <code>{"op":"p", "n":[value], "isPrime":[true/false]}</code><br>
-                    Note: <em>n</em> must be a positive integer.
-                </li>
-        
-                <li>
-                    <strong>Find nth Prime:</strong> 
-                    <code>?op=np&n=[value]</code><br>
-                    Returns: <code>{"op":"np", "n":[value], "result":[nth prime number]}</code><br>
-                    Note: <em>n</em> must be a positive integer.
-                </li>
-            </ul>
-        </body>
-        </html>
-        
-        `;
+    help(){
+        let helpPagePath = path.join(process.cwd(), wwwroot, 'help.html')
+        this.HttpContext.response.HTML(fs.readFileSync(helpPagePath));
     }
 }
