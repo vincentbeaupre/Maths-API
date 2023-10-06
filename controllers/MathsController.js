@@ -59,8 +59,12 @@ export default class MathsController extends Controller {
             case '/':
             case '%':
                 if (x === undefined || y === undefined) {
-                    responsePayload.error = "Both 'x' and 'y' parameters are required for this operation";
-                    this.HttpContext.response.badRequest(responsePayload);
+                    this.HttpContext.response.JSON({
+                        op: op,
+                        x: x,
+                        y: y,
+                        error: 'Both x and y parameters are required for this operation'
+                    });
                     return;
                 }
                 break;
@@ -91,11 +95,11 @@ export default class MathsController extends Controller {
 
                 if (isNaN(x)) {
                     responsePayload.error = "'x' parameter is not a number";
-                    this.HttpContext.response.badRequest(responsePayload);
+                    this.HttpContext.response.JSON(responsePayload);
                     return;
                 } else if (isNaN(y)) {
                     responsePayload.error = "'y' parameter is not a number";
-                    this.HttpContext.response.badRequest(responsePayload);
+                    this.HttpContext.response.JSON(responsePayload);
                     return;
                 }
 
@@ -113,25 +117,22 @@ export default class MathsController extends Controller {
                         responsePayload.value = responsePayload.x * responsePayload.y;
                         break;
                     case '/':
-                        if (responsePayload.y !== 0) {
-                            responsePayload.value = responsePayload.x / responsePayload.y;
-                        } else {
-                            this.HttpContext.response.JSON({
-                                op: op,
-                                x: x,
-                                y: y,
-                                error: 'Division by zero is not allowed'
-                            });
+                        if (responsePayload.y === 0) {
+                            responsePayload.error = 'Division by zero is not allowed';
+                            this.HttpContext.response.JSON(responsePayload);
                             return;
+                        } else {
+                            responsePayload.value = responsePayload.x / responsePayload.y;
                         }
                         break;
                     case '%':
                         if (responsePayload.y === 0) {
                             responsePayload.error = 'Modulo by zero is not allowed';
-                            this.HttpContext.response.badRequest(responsePayload);
+                            this.HttpContext.response.JSON(responsePayload);
                             return;
+                        } else {
+                            responsePayload.value = responsePayload.x % responsePayload.y;
                         }
-                        responsePayload.value = responsePayload.x % responsePayload.y;
                         break;
                 }
                 break;
@@ -180,7 +181,7 @@ export default class MathsController extends Controller {
         this.HttpContext.response.JSON(responsePayload);
     }
 
-    help(){
+    help() {
         let helpPagePath = path.join(process.cwd(), wwwroot, 'help.html')
         this.HttpContext.response.HTML(fs.readFileSync(helpPagePath));
     }
